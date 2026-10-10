@@ -3,13 +3,13 @@ steps:
     args:
       - build
       - -t
-      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$COMMIT_SHA
+      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$BUILD_ID
       - .
 
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$COMMIT_SHA
+      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$BUILD_ID
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
@@ -18,7 +18,7 @@ steps:
       - deploy
       - next-gen-phone-ai-dialogue
       - --image
-      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$COMMIT_SHA
+      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$BUILD_ID
       - --region
       - asia-northeast1
       - --platform
@@ -34,4 +34,4 @@ steps:
       - NODE_ENV=production,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,FIRESTORE_DATABASE_ID=appdb,DIALOGFLOW_PROJECT_ID=$PROJECT_ID,DIALOGFLOW_LOCATION=us-central1,DIALOGFLOW_LANGUAGE_CODE=ja,ADMIN_USERNAME=admin
 
 images:
-  - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$COMMIT_SHA
+  - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$BUILD_ID
