@@ -1,0 +1,37 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$COMMIT_SHA
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$COMMIT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - next-gen-phone-ai-dialogue
+      - --image
+      - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$COMMIT_SHA
+      - --region
+      - asia-northeast1
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --min-instances
+      - "0"
+      - --max-instances
+      - "1"
+      - --service-account
+      - next-gen-phone-ai-dialogue@$PROJECT_ID.iam.gserviceaccount.com
+      - --set-env-vars
+      - NODE_ENV=production,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,FIRESTORE_DATABASE_ID=appdb,DIALOGFLOW_PROJECT_ID=$PROJECT_ID,DIALOGFLOW_LOCATION=us-central1,DIALOGFLOW_LANGUAGE_CODE=ja,ADMIN_USERNAME=admin
+
+images:
+  - asia-northeast1-docker.pkg.dev/$PROJECT_ID/ai-phone-receptionist/app:$COMMIT_SHA
