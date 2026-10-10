@@ -43,6 +43,11 @@ export async function listCollection(collectionName, limit = 25) {
   }));
 }
 
+export async function getCollectionDoc(collectionName, docId) {
+  const snapshot = await businessRef().collection(collectionName).doc(docId).get();
+  return snapshot.exists ? { id: snapshot.id, ...snapshot.data() } : null;
+}
+
 export async function createCollectionDoc(collectionName, data) {
   const now = new Date().toISOString();
   const ref = await businessRef().collection(collectionName).add({
@@ -63,4 +68,16 @@ export async function updateCollectionDoc(collectionName, docId, data) {
     },
     { merge: true }
   );
+}
+
+export async function createOpsLog({ event, level = "info", message = "", tag = "", bookingId = "", callbackId = "", metadata = {} }) {
+  return createCollectionDoc("opsLogs", {
+    event,
+    level,
+    message,
+    tag,
+    bookingId,
+    callbackId,
+    metadata
+  });
 }

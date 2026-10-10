@@ -698,6 +698,12 @@ Cloud Run deployment instructions live in [docs/deployment.md](docs/deployment.m
 Dialogflow CX setup lives in [docs/dialogflow-cx-blueprint.md](docs/dialogflow-cx-blueprint.md).
 Phase 9-13 test and rollout checklist lives in [docs/phase-9-13-checklist.md](docs/phase-9-13-checklist.md).
 
+Create the base Dialogflow CX intents and an isolated flow draft:
+
+```bash
+npm run setup:cx
+```
+
 ### Phase 1: Foundation
 
 - GCPプロジェクト作成

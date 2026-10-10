@@ -1,7 +1,7 @@
 import express from "express";
 import { checkCalendarAvailability, createCalendarEvent, normalizeDate, normalizeTime } from "../calendar.js";
 import { config } from "../config.js";
-import { createCollectionDoc, getBusiness } from "../firestore.js";
+import { createCollectionDoc, createOpsLog, getBusiness } from "../firestore.js";
 
 export const dialogflowRouter = express.Router();
 
@@ -11,7 +11,12 @@ dialogflowRouter.post("/", async (req, res, next) => {
       const headerSecret = req.headers["x-webhook-secret"];
       const querySecret = req.query.token;
       if (headerSecret !== config.dialogflow.webhookSecret && querySecret !== config.dialogflow.webhookSecret) {
-        return res.status(403).json({ error: "Forbidden" });
+        await createOpsLog({
+          event: "webhook_unauthorized",
+          level: "warn",
+          message: "Dialogflow webhook request rejected due to invalid secret"
+        });
+        return res.status(401).json({ error: "Unauthorized" });
       }
     }
 
@@ -36,6 +41,12 @@ dialogflowRouter.post("/", async (req, res, next) => {
       }
     });
   } catch (error) {
+    await createOpsLog({
+      event: "webhook_failed",
+      level: "error",
+      message: error.message,
+      tag: req.body?.fulfillmentInfo?.tag ?? "unknown"
+    });
     next(error);
   }
 });
@@ -96,6 +107,13 @@ const webhookHandlers = {
     });
 
     if (calendarEvent.skipped && calendarEvent.reason === "calendar_create_failed") {
+      await createOpsLog({
+        event: "calendar_failed",
+        level: "error",
+        message: calendarEvent.errorMessage ?? "Calendar event creation failed",
+        tag: "create_booking"
+      });
+
       return {
         message: "予約カレンダーへの登録に失敗しました。恐れ入りますが、担当者から折り返し確認いたします。",
         parameters: {
@@ -121,6 +139,32 @@ const webhookHandlers = {
     };
 
     const created = await createCollectionDoc("bookings", booking);
+    await createOpsLog({
+      event: "booking_created",
+      level: "info",
+      message: "Booking created from Dialogflow webhook",
+      tag: "create_booking",
+      bookingId: created.id,
+      metadata: {
+        customerName: booking.customerName,
+        date: booking.date,
+        startTime: booking.startTime,
+        calendarEventId: booking.calendarEventId
+      }
+    });
+
+    if (booking.calendarEventId) {
+      await createOpsLog({
+        event: "calendar_created",
+        level: "info",
+        message: "Calendar event created for booking",
+        tag: "create_booking",
+        bookingId: created.id,
+        metadata: {
+          calendarEventId: booking.calendarEventId
+        }
+      });
+    }
 
     return {
       message: "予約が完了しました。ご来店をお待ちしております。",
@@ -152,6 +196,13 @@ const webhookHandlers = {
       preferredTime: parameters.preferred_time ?? "",
       status: "open"
     });
+    await createOpsLog({
+      event: "callback_created",
+      level: "info",
+      message: "Callback request created from Dialogflow webhook",
+      tag: "create_callback_request",
+      callbackId: created.id
+    });
 
     return {
       message: "承知しました。担当者より折り返しご連絡いたします。",
@@ -181,6 +232,13 @@ const webhookHandlers = {
   },
 
   async default(parameters) {
+    await createOpsLog({
+      event: "unknown_webhook_tag",
+      level: "warn",
+      message: "Unknown or missing Dialogflow webhook tag",
+      tag: "default"
+    });
+
     return {
       message: "Webhookは正常に応答しています。",
       parameters
