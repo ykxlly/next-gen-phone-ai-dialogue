@@ -695,6 +695,8 @@ curl -X POST http://localhost:8080/webhook/dialogflow \
 If `GOOGLE_CALENDAR_ID` is configured but Calendar API is disabled or the service account is not shared on the calendar, the MVP still saves the booking to Firestore and marks Calendar creation as skipped.
 
 Cloud Run deployment instructions live in [docs/deployment.md](docs/deployment.md).
+Dialogflow CX setup lives in [docs/dialogflow-cx-blueprint.md](docs/dialogflow-cx-blueprint.md).
+Phase 9-13 test and rollout checklist lives in [docs/phase-9-13-checklist.md](docs/phase-9-13-checklist.md).
 
 ### Phase 1: Foundation
 
