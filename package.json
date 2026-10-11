@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "lint": "node --check src/server.js && node --check src/config.js && node --check src/firestore.js && node --check src/calendar.js && node --check src/routes/admin.js && node --check src/routes/dialogflow.js && node --check scripts/seed-firestore.js && node --check scripts/setup-dialogflow-cx.js && node --check scripts/setup-dialogflow-cx-flow.js && node --check scripts/verify-phase8.js && node --check scripts/verify-cx-form.js && node --check scripts/verify-mvp.js",
+    "lint": "node --check src/server.js && node --check src/config.js && node --check src/firestore.js && node --check src/calendar.js && node --check src/routes/admin.js && node --check src/routes/dialogflow.js && node --check scripts/seed-firestore.js && node --check scripts/setup-dialogflow-cx.js && node --check scripts/setup-dialogflow-cx-flow.js && node --check scripts/connect-default-flow.js && node --check scripts/verify-phase8.js && node --check scripts/verify-cx-form.js && node --check scripts/verify-mvp.js",
     "seed": "node scripts/seed-firestore.js",
     "setup:cx": "node scripts/setup-dialogflow-cx.js",
     "setup:cx:flow": "node scripts/setup-dialogflow-cx-flow.js",
+    "setup:cx:default": "node scripts/connect-default-flow.js",
     "verify:phase8": "node scripts/verify-phase8.js",
     "verify:cx:form": "node scripts/verify-cx-form.js",
     "verify:mvp": "node scripts/verify-mvp.js"
