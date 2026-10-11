@@ -46,6 +46,32 @@ npm run verify:phase8
 
 This script intentionally creates a real test booking and a real Google Calendar event. Delete the test event after validation if needed.
 
+The CX pages and routes can be recreated with:
+
+```bash
+npm run setup:cx
+npm run setup:cx:flow
+```
+
+The script creates/updates these pages:
+
+- `Booking.Collect`
+- `Booking.CheckAvailability`
+- `Booking.CreateBooking`
+- `Booking.Busy`
+- `Booking.Done`
+- `FAQ.GetBusinessInfo`
+- `Callback.Collect`
+- `Callback.Create`
+
+Configured fulfillment tags:
+
+- `check_availability`
+- `create_booking`
+- `get_business_info`
+- `create_callback_request`
+- `save_call_summary`
+
 Rollback:
 
 - Disable the CX route that calls the webhook.

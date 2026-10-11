@@ -705,6 +705,12 @@ Create the base Dialogflow CX intents and an isolated flow draft:
 npm run setup:cx
 ```
 
+Create/update the MVP CX pages, routes, no-input/no-match handlers, and webhook fulfillment tags:
+
+```bash
+npm run setup:cx:flow
+```
+
 Run the Phase 8 webhook verification against Cloud Run:
 
 ```bash
