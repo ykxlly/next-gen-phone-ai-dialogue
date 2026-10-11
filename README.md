@@ -705,6 +705,12 @@ Create the base Dialogflow CX intents and an isolated flow draft:
 npm run setup:cx
 ```
 
+Run the Phase 8 webhook verification against Cloud Run:
+
+```bash
+npm run verify:phase8
+```
+
 ### Phase 1: Foundation
 
 - GCPプロジェクト作成

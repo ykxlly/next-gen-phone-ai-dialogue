@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "lint": "node --check src/server.js && node --check src/config.js && node --check src/firestore.js && node --check src/calendar.js && node --check src/routes/admin.js && node --check src/routes/dialogflow.js && node --check scripts/seed-firestore.js && node --check scripts/setup-dialogflow-cx.js",
     "seed": "node scripts/seed-firestore.js",
-    "setup:cx": "node scripts/setup-dialogflow-cx.js"
+    "setup:cx": "node scripts/setup-dialogflow-cx.js",
+    "verify:phase8": "node scripts/verify-phase8.js"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.0",

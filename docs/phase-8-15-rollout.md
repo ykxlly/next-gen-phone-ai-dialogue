@@ -29,6 +29,23 @@ Acceptance:
 - Booking webhook response includes `booking_status=confirmed`.
 - Admin `/admin/bookings`, `/admin/callbacks`, and `/admin/logs` reflect the test.
 
+Before using the CX simulator, run the webhook-level verification:
+
+```bash
+npm run verify:phase8
+```
+
+Optional overrides:
+
+```bash
+VERIFY_BASE_URL=https://your-cloud-run-url \
+VERIFY_BOOKING_DATE=2026-11-01 \
+VERIFY_BOOKING_TIME=15:40 \
+npm run verify:phase8
+```
+
+This script intentionally creates a real test booking and a real Google Calendar event. Delete the test event after validation if needed.
+
 Rollback:
 
 - Disable the CX route that calls the webhook.
