@@ -77,6 +77,7 @@ function page(title, body) {
             <a href="/admin/callbacks">Callbacks</a>
             <a href="/admin/faqs">FAQs</a>
             <a href="/admin/business">Business</a>
+            <a href="/admin/readiness">Readiness</a>
             <a href="/admin/logs">Logs</a>
             <a href="/healthz">Health</a>
           </nav>
@@ -158,6 +159,57 @@ adminRouter.get("/dashboard", async (_req, res, next) => {
             { label: "Service", key: "serviceType" },
             { label: "Status", key: "status" }
           ], "No bookings yet.")}
+        `
+      )
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get("/readiness", async (_req, res, next) => {
+  try {
+    const [business, bookings, calls, callbacks, logs] = await Promise.all([
+      getBusiness(),
+      listCollection("bookings", 10),
+      listCollection("calls", 10),
+      listCollection("callbackRequests", 10),
+      listCollection("opsLogs", 10)
+    ]);
+
+    const checks = [
+      { label: "Admin password", ok: Boolean(config.admin.password), detail: config.admin.password ? "configured" : "missing ADMIN_PASSWORD" },
+      { label: "Firestore project", ok: Boolean(config.googleCloudProject), detail: config.googleCloudProject || "missing GOOGLE_CLOUD_PROJECT" },
+      { label: "Firestore database", ok: Boolean(config.firestoreDatabaseId), detail: config.firestoreDatabaseId || "missing FIRESTORE_DATABASE_ID" },
+      { label: "Google Calendar", ok: Boolean(config.googleCalendarId), detail: config.googleCalendarId ? "configured" : "GOOGLE_CALENDAR_ID not set" },
+      { label: "Dialogflow project", ok: Boolean(config.dialogflow.projectId), detail: config.dialogflow.projectId || "missing DIALOGFLOW_PROJECT_ID" },
+      { label: "Dialogflow agent", ok: Boolean(config.dialogflow.agentId), detail: config.dialogflow.agentId ? "configured" : "missing DIALOGFLOW_AGENT_ID" },
+      { label: "Webhook secret", ok: Boolean(config.dialogflow.webhookSecret), detail: config.dialogflow.webhookSecret ? "enabled" : "not enabled yet" },
+      { label: "Business profile", ok: Boolean(business?.name), detail: business?.name || "businesses/default is missing name" },
+      { label: "Bookings", ok: bookings.length > 0, detail: `${bookings.length} recent records` },
+      { label: "Calls", ok: calls.length > 0, detail: `${calls.length} recent records` },
+      { label: "Callbacks", ok: callbacks.length > 0, detail: `${callbacks.length} recent records` },
+      { label: "Ops logs", ok: logs.length > 0, detail: `${logs.length} recent records` }
+    ];
+
+    const rows = checks
+      .map((check) => ({
+        status: check.ok ? "OK" : "TODO",
+        label: check.label,
+        detail: check.detail
+      }));
+
+    res.type("html").send(
+      page(
+        "MVP Readiness",
+        `
+          <h1>MVP Readiness</h1>
+          <p class="muted">One-store MVP readiness snapshot. Webhook secret can remain TODO until external CX testing is complete.</p>
+          ${renderTable(rows, [
+            { label: "Status", key: "status" },
+            { label: "Check", key: "label" },
+            { label: "Detail", key: "detail" }
+          ], "No readiness checks.")}
         `
       )
     );

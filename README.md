@@ -723,6 +723,12 @@ Run the Dialogflow CX form verification:
 npm run verify:cx:form
 ```
 
+Run the full one-store MVP verification:
+
+```bash
+npm run verify:mvp
+```
+
 ### Phase 1: Foundation
 
 - GCPプロジェクト作成

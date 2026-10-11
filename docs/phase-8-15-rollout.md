@@ -78,10 +78,22 @@ Run the CX form-level verification:
 npm run verify:cx:form
 ```
 
+Run the full one-store MVP verification:
+
+```bash
+npm run verify:mvp
+```
+
 Known simulator note:
 
 - `2026-11-07` style dates are reliably captured by the API simulator.
 - `2026年11月7日` may be treated as no-match in the API simulator. If this also happens in the console simulator, add dedicated Japanese date training phrases or collect date with a more constrained prompt such as `YYYY-MM-DD形式でお願いします`.
+
+Current MVP prompt policy:
+
+- Date prompt asks for `YYYY-MM-DD`.
+- Time prompt asks for `HH:mm`.
+- This is intentional for the first MVP because it makes CX slot filling stable before phone testing.
 
 Rollback:
 

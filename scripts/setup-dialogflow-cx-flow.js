@@ -206,8 +206,8 @@ pages.bookingCollect = await ensurePage(flow, "Booking.Collect", {
   entryFulfillment: fulfillmentMessage("ご予約ですね。必要事項を順番に確認します。"),
   form: {
     parameters: [
-      requiredParam("date", systemEntity("sys.date"), "ご希望の日にちはいつですか？"),
-      requiredParam("time", systemEntity("sys.time"), "ご希望の時間は何時ごろですか？"),
+      requiredParam("date", systemEntity("sys.date"), "ご希望の日にちを西暦のYYYY-MM-DD形式でお願いします。たとえば2026-11-07です。"),
+      requiredParam("time", systemEntity("sys.time"), "ご希望の時間をHH:mm形式でお願いします。たとえば16:50です。"),
       requiredParam("service_type", systemEntity("sys.any"), "ご希望のメニューや内容を教えてください。"),
       requiredParam("name", systemEntity("sys.any"), "お名前をフルネームでお願いします。"),
       requiredParam("phone", systemEntity("sys.phone-number"), "確認のため、お電話番号をお願いします。")
