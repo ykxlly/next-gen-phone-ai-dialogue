@@ -16,7 +16,16 @@ export const config = {
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID ?? "",
     phoneNumber: process.env.TWILIO_PHONE_NUMBER ?? "",
-    transferNumber: process.env.TWILIO_TRANSFER_NUMBER ?? ""
+    transferNumber: process.env.TWILIO_TRANSFER_NUMBER ?? "",
+    virtualAgentConnectorName: process.env.TWILIO_VIRTUAL_AGENT_CONNECTOR_NAME ?? "",
+    studioFlowSid: process.env.TWILIO_STUDIO_FLOW_SID ?? ""
+  },
+  telnyx: {
+    apiKey: process.env.TELNYX_API_KEY ?? "",
+    phoneNumber: process.env.TELNYX_PHONE_NUMBER ?? "",
+    connectionId: process.env.TELNYX_CONNECTION_ID ?? "",
+    transferNumber: process.env.TELNYX_TRANSFER_NUMBER ?? "",
+    publicKey: process.env.TELNYX_PUBLIC_KEY ?? ""
   },
   admin: {
     username: process.env.ADMIN_USERNAME ?? "admin",

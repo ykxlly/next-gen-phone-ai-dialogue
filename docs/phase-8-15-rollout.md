@@ -119,6 +119,8 @@ Prep checklist:
 - Keep phone number separate from the production store number until Phase 13.
 - Document emergency fallback: manually disable forwarding and answer calls normally.
 
+Provider setup details live in [phase-9-phone-provider-setup.md](phase-9-phone-provider-setup.md).
+
 ## Phase 10: Real Phone Test
 
 Run these tests with the test number:

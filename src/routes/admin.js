@@ -185,6 +185,8 @@ adminRouter.get("/readiness", async (_req, res, next) => {
       { label: "Dialogflow project", ok: Boolean(config.dialogflow.projectId), detail: config.dialogflow.projectId || "missing DIALOGFLOW_PROJECT_ID" },
       { label: "Dialogflow agent", ok: Boolean(config.dialogflow.agentId), detail: config.dialogflow.agentId ? "configured" : "missing DIALOGFLOW_AGENT_ID" },
       { label: "Webhook secret", ok: Boolean(config.dialogflow.webhookSecret), detail: config.dialogflow.webhookSecret ? "enabled" : "not enabled yet" },
+      { label: "Twilio test number", ok: Boolean(config.twilio.phoneNumber), detail: config.twilio.phoneNumber || "not connected yet" },
+      { label: "Transfer number", ok: Boolean(config.twilio.transferNumber), detail: config.twilio.transferNumber || "not configured yet" },
       { label: "Business profile", ok: Boolean(business?.name), detail: business?.name || "businesses/default is missing name" },
       { label: "Bookings", ok: bookings.length > 0, detail: `${bookings.length} recent records` },
       { label: "Calls", ok: calls.length > 0, detail: `${calls.length} recent records` },
