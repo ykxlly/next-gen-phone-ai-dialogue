@@ -697,6 +697,7 @@ If `GOOGLE_CALENDAR_ID` is configured but Calendar API is disabled or the servic
 Cloud Run deployment instructions live in [docs/deployment.md](docs/deployment.md).
 Dialogflow CX setup lives in [docs/dialogflow-cx-blueprint.md](docs/dialogflow-cx-blueprint.md).
 Phase 9-13 test and rollout checklist lives in [docs/phase-9-13-checklist.md](docs/phase-9-13-checklist.md).
+Phase 8-15 rollout checklist lives in [docs/phase-8-15-rollout.md](docs/phase-8-15-rollout.md).
 
 Create the base Dialogflow CX intents and an isolated flow draft:
 

@@ -1,6 +1,6 @@
 import express from "express";
 import { config } from "../config.js";
-import { getCollectionDoc, listCollection, updateCollectionDoc } from "../firestore.js";
+import { createCollectionDoc, getBusiness, getCollectionDoc, listCollection, setBusiness, updateCollectionDoc } from "../firestore.js";
 
 export const adminRouter = express.Router();
 
@@ -53,6 +53,11 @@ function page(title, body) {
           nav { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 24px; }
           a { color: #075985; }
           nav a { font-weight: 650; text-decoration: none; }
+          form { display: grid; gap: 14px; max-width: 720px; background: white; border: 1px solid #e5e7eb; padding: 18px; margin: 18px 0; }
+          label { display: grid; gap: 6px; font-weight: 650; }
+          input, select, textarea { width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; padding: 9px 10px; font: inherit; }
+          textarea { min-height: 110px; }
+          button { width: fit-content; border: 1px solid #075985; background: #075985; color: white; padding: 9px 14px; font-weight: 650; cursor: pointer; }
           table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #e5e7eb; }
           th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
           th { background: #f1f5f9; font-size: 13px; }
@@ -71,6 +76,7 @@ function page(title, body) {
             <a href="/admin/calls">Calls</a>
             <a href="/admin/callbacks">Callbacks</a>
             <a href="/admin/faqs">FAQs</a>
+            <a href="/admin/business">Business</a>
             <a href="/admin/logs">Logs</a>
             <a href="/healthz">Health</a>
           </nav>
@@ -79,6 +85,14 @@ function page(title, body) {
       </body>
     </html>
   `;
+}
+
+function input(name, value = "", type = "text") {
+  return `<input type="${escapeHtml(type)}" name="${escapeHtml(name)}" value="${escapeHtml(value)}" />`;
+}
+
+function textarea(name, value = "") {
+  return `<textarea name="${escapeHtml(name)}">${escapeHtml(value)}</textarea>`;
 }
 
 function renderTable(items, columns, emptyMessage) {
@@ -207,9 +221,36 @@ adminRouter.get("/bookings/:id", async (req, res, next) => {
             <tr><th>Created</th><td>${escapeHtml(booking.createdAt)}</td></tr>
             <tr><th>Updated</th><td>${escapeHtml(booking.updatedAt)}</td></tr>
           </tbody></table>
+          <form method="post" action="/admin/bookings/${escapeHtml(booking.id)}">
+            <label>Status
+              <select name="status">
+                ${["confirmed", "pending", "cancelled", "completed", "no_show"].map((status) => (
+                  `<option value="${status}"${booking.status === status ? " selected" : ""}>${status}</option>`
+                )).join("")}
+              </select>
+            </label>
+            <label>Memo ${textarea("memo", booking.memo)}</label>
+            <button type="submit">Update booking</button>
+          </form>
         `
       )
     );
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/bookings/:id", express.urlencoded({ extended: false }), async (req, res, next) => {
+  try {
+    const allowed = new Set(["confirmed", "pending", "cancelled", "completed", "no_show"]);
+    if (!allowed.has(req.body.status)) {
+      return res.status(400).send("Invalid status");
+    }
+    await updateCollectionDoc("bookings", req.params.id, {
+      status: req.body.status,
+      memo: req.body.memo ?? ""
+    });
+    res.redirect(`/admin/bookings/${encodeURIComponent(req.params.id)}`);
   } catch (error) {
     next(error);
   }
@@ -224,12 +265,42 @@ adminRouter.get("/calls", async (_req, res, next) => {
         `
           <h1>Calls</h1>
           ${renderTable(calls, [
-            { label: "Caller", key: "callerPhone" },
+            { label: "Caller", renderHtml: (item) => `<a href="/admin/calls/${encodeURIComponent(item.id)}">${escapeHtml(item.callerPhone)}</a>` },
             { label: "Intent", key: "intent" },
             { label: "Result", key: "result" },
             { label: "Summary", key: "summary" },
             { label: "Created", key: "createdAt" }
           ], "No calls yet.")}
+        `
+      )
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get("/calls/:id", async (req, res, next) => {
+  try {
+    const call = await getCollectionDoc("calls", req.params.id);
+    if (!call) {
+      return res.status(404).type("html").send(page("Call not found", "<h1>Call not found</h1>"));
+    }
+
+    res.type("html").send(
+      page(
+        "Call Detail",
+        `
+          <h1>Call Detail</h1>
+          <table><tbody>
+            <tr><th>ID</th><td>${escapeHtml(call.id)}</td></tr>
+            <tr><th>Caller</th><td>${escapeHtml(call.callerPhone)}</td></tr>
+            <tr><th>Intent</th><td>${escapeHtml(call.intent)}</td></tr>
+            <tr><th>Result</th><td>${escapeHtml(call.result)}</td></tr>
+            <tr><th>Summary</th><td>${escapeHtml(call.summary)}</td></tr>
+            <tr><th>Transcript</th><td>${escapeHtml(call.transcript)}</td></tr>
+            <tr><th>Session</th><td><code>${escapeHtml(call.rawSession)}</code></td></tr>
+            <tr><th>Created</th><td>${escapeHtml(call.createdAt)}</td></tr>
+          </tbody></table>
         `
       )
     );
@@ -246,8 +317,9 @@ adminRouter.get("/faqs", async (_req, res, next) => {
         "FAQs",
         `
           <h1>FAQs</h1>
+          <p><a href="/admin/faqs/new">New FAQ</a></p>
           ${renderTable(faqs, [
-            { label: "Question", key: "question" },
+            { label: "Question", renderHtml: (item) => `<a href="/admin/faqs/${encodeURIComponent(item.id)}">${escapeHtml(item.question)}</a>` },
             { label: "Answer", key: "answer" },
             { label: "Category", key: "category" },
             { label: "Enabled", render: (item) => item.enabled ? "yes" : "no" }
@@ -255,6 +327,144 @@ adminRouter.get("/faqs", async (_req, res, next) => {
         `
       )
     );
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get("/faqs/new", (_req, res) => {
+  res.type("html").send(
+    page(
+      "New FAQ",
+      `
+        <h1>New FAQ</h1>
+        <form method="post" action="/admin/faqs">
+          <label>Question ${input("question")}</label>
+          <label>Answer ${textarea("answer")}</label>
+          <label>Category ${input("category", "general")}</label>
+          <label>Enabled
+            <select name="enabled">
+              <option value="true">yes</option>
+              <option value="false">no</option>
+            </select>
+          </label>
+          <button type="submit">Create FAQ</button>
+        </form>
+      `
+    )
+  );
+});
+
+adminRouter.post("/faqs", express.urlencoded({ extended: false }), async (req, res, next) => {
+  try {
+    const created = await createCollectionDoc("faqs", {
+      question: req.body.question ?? "",
+      answer: req.body.answer ?? "",
+      category: req.body.category ?? "general",
+      enabled: req.body.enabled === "true"
+    });
+    res.redirect(`/admin/faqs/${encodeURIComponent(created.id)}`);
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get("/faqs/:id", async (req, res, next) => {
+  try {
+    const faq = await getCollectionDoc("faqs", req.params.id);
+    if (!faq) {
+      return res.status(404).type("html").send(page("FAQ not found", "<h1>FAQ not found</h1>"));
+    }
+
+    res.type("html").send(
+      page(
+        "FAQ Detail",
+        `
+          <h1>FAQ Detail</h1>
+          <form method="post" action="/admin/faqs/${escapeHtml(faq.id)}">
+            <label>Question ${input("question", faq.question)}</label>
+            <label>Answer ${textarea("answer", faq.answer)}</label>
+            <label>Category ${input("category", faq.category)}</label>
+            <label>Enabled
+              <select name="enabled">
+                <option value="true"${faq.enabled ? " selected" : ""}>yes</option>
+                <option value="false"${!faq.enabled ? " selected" : ""}>no</option>
+              </select>
+            </label>
+            <button type="submit">Update FAQ</button>
+          </form>
+        `
+      )
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/faqs/:id", express.urlencoded({ extended: false }), async (req, res, next) => {
+  try {
+    await updateCollectionDoc("faqs", req.params.id, {
+      question: req.body.question ?? "",
+      answer: req.body.answer ?? "",
+      category: req.body.category ?? "general",
+      enabled: req.body.enabled === "true"
+    });
+    res.redirect(`/admin/faqs/${encodeURIComponent(req.params.id)}`);
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get("/business", async (_req, res, next) => {
+  try {
+    const business = await getBusiness() ?? {};
+    res.type("html").send(
+      page(
+        "Business Settings",
+        `
+          <h1>Business Settings</h1>
+          <form method="post" action="/admin/business">
+            <label>Name ${input("name", business.name)}</label>
+            <label>Phone ${input("phone", business.phone)}</label>
+            <label>Address ${input("address", business.address)}</label>
+            <label>Timezone ${input("timezone", business.timezone ?? "Asia/Tokyo")}</label>
+            <label>Calendar ID ${input("calendarId", business.calendarId)}</label>
+            <label>Transfer Phone ${input("transferPhone", business.transferPhone)}</label>
+            <label>Business Hours Text ${textarea("businessHoursText", business.businessHoursText)}</label>
+            <label>Services JSON ${textarea("servicesJson", JSON.stringify(business.services ?? [], null, 2))}</label>
+            <button type="submit">Update business</button>
+          </form>
+        `
+      )
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/business", express.urlencoded({ extended: false }), async (req, res, next) => {
+  try {
+    let services = [];
+    try {
+      services = JSON.parse(req.body.servicesJson || "[]");
+      if (!Array.isArray(services)) {
+        return res.status(400).send("Services JSON must be an array");
+      }
+    } catch {
+      return res.status(400).send("Invalid services JSON");
+    }
+
+    await setBusiness({
+      name: req.body.name ?? "",
+      phone: req.body.phone ?? "",
+      address: req.body.address ?? "",
+      timezone: req.body.timezone ?? "Asia/Tokyo",
+      calendarId: req.body.calendarId ?? "",
+      transferPhone: req.body.transferPhone ?? "",
+      businessHoursText: req.body.businessHoursText ?? "",
+      services
+    });
+    res.redirect("/admin/business");
   } catch (error) {
     next(error);
   }
