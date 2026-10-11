@@ -717,6 +717,12 @@ Run the Phase 8 webhook verification against Cloud Run:
 npm run verify:phase8
 ```
 
+Run the Dialogflow CX form verification:
+
+```bash
+npm run verify:cx:form
+```
+
 ### Phase 1: Foundation
 
 - GCPプロジェクト作成

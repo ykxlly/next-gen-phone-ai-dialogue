@@ -10,7 +10,8 @@
     "seed": "node scripts/seed-firestore.js",
     "setup:cx": "node scripts/setup-dialogflow-cx.js",
     "setup:cx:flow": "node scripts/setup-dialogflow-cx-flow.js",
-    "verify:phase8": "node scripts/verify-phase8.js"
+    "verify:phase8": "node scripts/verify-phase8.js",
+    "verify:cx:form": "node scripts/verify-cx-form.js"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.0",
