@@ -25,6 +25,7 @@ const client = new google.auth.JWT({
 const project = process.env.DIALOGFLOW_PROJECT_ID;
 const location = process.env.DIALOGFLOW_LOCATION;
 const agent = process.env.DIALOGFLOW_AGENT_ID;
+const languageCode = process.env.DIALOGFLOW_LANGUAGE_CODE ?? "ja";
 const base = `https://${location}-dialogflow.googleapis.com/v3/projects/${project}/locations/${location}/agents/${agent}`;
 
 const intentSpecs = [
@@ -47,12 +48,23 @@ async function ensureIntent(displayName, phrases) {
   const intents = await list("intents");
   const existing = intents.find((intent) => intent.displayName === displayName);
   if (existing) {
-    console.log(`intent exists: ${displayName}`);
+    await client.request({
+      url: `${base}/intents/${existing.name.split("/").pop()}?languageCode=${languageCode}&updateMask=training_phrases`,
+      method: "PATCH",
+      data: {
+        displayName,
+        trainingPhrases: phrases.map((text) => ({
+          parts: [{ text }],
+          repeatCount: 1
+        }))
+      }
+    });
+    console.log(`intent exists and localized: ${displayName} (${languageCode})`);
     return existing;
   }
 
   const response = await client.request({
-    url: `${base}/intents`,
+    url: `${base}/intents?languageCode=${languageCode}`,
     method: "POST",
     data: {
       displayName,

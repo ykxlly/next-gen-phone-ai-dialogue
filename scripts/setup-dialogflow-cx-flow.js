@@ -25,6 +25,7 @@ const client = new google.auth.JWT({
 const project = process.env.DIALOGFLOW_PROJECT_ID;
 const location = process.env.DIALOGFLOW_LOCATION;
 const agent = process.env.DIALOGFLOW_AGENT_ID;
+const languageCode = process.env.DIALOGFLOW_LANGUAGE_CODE ?? "ja";
 const apiRoot = `https://${location}-dialogflow.googleapis.com/v3`;
 const agentPath = `projects/${project}/locations/${location}/agents/${agent}`;
 const base = `${apiRoot}/${agentPath}`;
@@ -49,6 +50,10 @@ async function request(pathOrUrl, method = "GET", data, query = "") {
     url = `${apiRoot}/${pathOrUrl}${query}`;
   } else {
     url = `${base}/${pathOrUrl}${query}`;
+  }
+  const separator = url.includes("?") ? "&" : "?";
+  if (!url.includes("languageCode=")) {
+    url = `${url}${separator}languageCode=${languageCode}`;
   }
   const response = await client.request({ url, method, data });
   return response.data;
